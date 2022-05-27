@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../model/product.dart';
+import '../model/product_category.dart';
 
 class SliverBodyItems extends StatelessWidget {
   const SliverBodyItems({Key? key, required this.listItem}) : super(key: key);
