@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/rendering.dart';
 
 import '../data/data.dart';
 import '../model/my_header.dart';
@@ -22,6 +23,8 @@ class SliverScrollController {
   late ScrollController scrollControllerItemHeader;
 
   late ScrollController scrollControllerGlobally;
+
+  final visibleHeader = ValueNotifier(false);
 
   void loadDataRandom() {
     final productsTwo = [...products];
@@ -60,11 +63,49 @@ class SliverScrollController {
     );
     scrollControllerGlobally = ScrollController();
     scrollControllerItemHeader = ScrollController();
+    scrollControllerGlobally.addListener(_listenToScollChange);
+    headerNotifier.addListener(_listenHeaderNeotifier);
+    visibleHeader.addListener(_listendVisibleHeader);
+  }
+
+  void _listendVisibleHeader() {
+    if (visibleHeader.value) {
+      headerNotifier.value = const MyHeader(visibile: false, index: 0);
+    }
+  }
+
+  void _listenHeaderNeotifier() {
+    // Would be error if if condition disable. Try It.
+    if (visibleHeader.value) {
+      for (var i = 0; i < listCategory.length; i++) {
+        scrollAnimationHorizontal(index: i);
+      }
+    }
+  }
+
+  void scrollAnimationHorizontal({required int index}) {
+    if (headerNotifier.value?.index == index &&
+        headerNotifier.value!.visibile) {
+      scrollControllerItemHeader.animateTo(
+          listOffsetItemHeader[headerNotifier.value!.index] - 16,
+          duration: const Duration(milliseconds: 500),
+          curve: goingDown.value ? Curves.bounceOut : Curves.fastOutSlowIn);
+    }
   }
 
   void dispose() {
     scrollControllerGlobally.dispose();
     scrollControllerItemHeader.dispose();
+  }
+
+  void _listenToScollChange() {
+    globalOffsetValue.value = scrollControllerGlobally.offset;
+    if (scrollControllerGlobally.position.userScrollDirection ==
+        ScrollDirection.reverse) {
+      goingDown.value = true;
+    } else {
+      goingDown.value = false;
+    }
   }
 
   void refreshHeader(
