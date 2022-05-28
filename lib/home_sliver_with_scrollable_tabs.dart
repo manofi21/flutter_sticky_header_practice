@@ -32,26 +32,34 @@ class _HomeSliverWithTabState extends State<HomeSliverWithTab> {
     return Scaffold(
       body: Scrollbar(
         radius: const Radius.circular(8),
-        child: CustomScrollView(
-          slivers: [
-            const _FlexibleSpaceBarHeader(),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _HeaderSliver(bloc),
-            ),
-            for (var i = 0; i < bloc.listCategory.length; i++) ...[
-              SliverPersistentHeader(
-                delegate: MyHeaderTitle(
-                  bloc.listCategory[i].category,
-                  (visible) {},
-                ),
-              ),
-              SliverBodyItems(
-                listItem: bloc.listCategory[i].products,
-              )
-            ]
-          ],
-        ),
+        child: ValueListenableBuilder<double>(
+            valueListenable: bloc.globalOffsetValue,
+            builder: (_, double valueCurrentScroll, __) {
+              return CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                controller: bloc.scrollControllerGlobally,
+                slivers: [
+                  _FlexibleSpaceBarHeader(
+                    valueScroll: valueCurrentScroll,
+                  ),
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _HeaderSliver(bloc),
+                  ),
+                  for (var i = 0; i < bloc.listCategory.length; i++) ...[
+                    SliverPersistentHeader(
+                      delegate: MyHeaderTitle(
+                        bloc.listCategory[i].category,
+                        (visible) {},
+                      ),
+                    ),
+                    SliverBodyItems(
+                      listItem: bloc.listCategory[i].products,
+                    )
+                  ]
+                ],
+              );
+            }),
       ),
     );
   }
@@ -60,7 +68,9 @@ class _HomeSliverWithTabState extends State<HomeSliverWithTab> {
 class _FlexibleSpaceBarHeader extends StatelessWidget {
   const _FlexibleSpaceBarHeader({
     Key? key,
+    required this.valueScroll,
   }) : super(key: key);
+  final double valueScroll;
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +79,7 @@ class _FlexibleSpaceBarHeader extends StatelessWidget {
       automaticallyImplyLeading: false,
       backgroundColor: Colors.transparent,
       stretch: true,
+      pinned: valueScroll < 90,
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.pin,
         stretchModes: const [StretchMode.zoomBackground],
@@ -127,7 +138,7 @@ class _HeaderSliver extends SliverPersistentHeaderDelegate {
                       ),
                       AnimatedSlide(
                         duration: const Duration(milliseconds: 300),
-                        offset: Offset(percent < 0.1 ? -.18 : .1, 0),
+                        offset: Offset(percent < 0.1 ? -0.18 : 0.1, 0),
                         curve: Curves.easeIn,
                         child: const Text(
                           'Kavsoft Bakery',
