@@ -53,7 +53,7 @@ class SliverScrollController {
   }
 
   void init() {
-    // loadDataRandom()
+    loadDataRandom();
     listOffsetItemHeader = List.generate(
       listCategory.length,
       (index) => index.toDouble(),
