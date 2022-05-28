@@ -19,12 +19,12 @@ class ListItemHeaderSliver extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 16.0),
       child: NotificationListener(
-        onNotification: (_)=> true,
+        onNotification: (_) => true,
         child: SingleChildScrollView(
           padding: EdgeInsets.only(
             right: size.width -
-                (itemsOffset[itemsOffset.length - 1] -
-                    itemsOffset[itemsOffset.length - 2]),
+                (((itemsOffset[itemsOffset.length - 1]) -
+                    itemsOffset[itemsOffset.length - 2])),
           ),
           controller: bloc.scrollControllerItemHeader,
           physics: const NeverScrollableScrollPhysics(),
