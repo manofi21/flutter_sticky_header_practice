@@ -32,6 +32,10 @@ class _HomeSliverWithTabState extends State<HomeSliverWithTab> {
     return Scaffold(
       body: Scrollbar(
         radius: const Radius.circular(8),
+        notificationPredicate: (scroll) {
+          bloc.valueScroll.value = scroll.metrics.extentInside;
+          return true;
+        },
         child: ValueListenableBuilder<double>(
             valueListenable: bloc.globalOffsetValue,
             builder: (_, double valueCurrentScroll, __) {
@@ -41,6 +45,7 @@ class _HomeSliverWithTabState extends State<HomeSliverWithTab> {
                 slivers: [
                   _FlexibleSpaceBarHeader(
                     valueScroll: valueCurrentScroll,
+                    bloc: bloc,
                   ),
                   SliverPersistentHeader(
                     pinned: true,
@@ -50,7 +55,11 @@ class _HomeSliverWithTabState extends State<HomeSliverWithTab> {
                     SliverPersistentHeader(
                       delegate: MyHeaderTitle(
                         bloc.listCategory[i].category,
-                        (visible) {},
+                        (visible) => bloc.refreshHeader(
+                          i,
+                          visible,
+                          lastIndex: i > 0 ? i - 1 : null,
+                        ),
                       ),
                     ),
                     SliverBodyItems(
@@ -69,11 +78,14 @@ class _FlexibleSpaceBarHeader extends StatelessWidget {
   const _FlexibleSpaceBarHeader({
     Key? key,
     required this.valueScroll,
+    required this.bloc,
   }) : super(key: key);
   final double valueScroll;
+  final SliverScrollController bloc;
 
   @override
   Widget build(BuildContext context) {
+    final sizeHeight = MediaQuery.of(context).size.height;
     return SliverAppBar(
       expandedHeight: 250,
       automaticallyImplyLeading: false,
@@ -85,17 +97,18 @@ class _FlexibleSpaceBarHeader extends StatelessWidget {
         stretchModes: const [StretchMode.zoomBackground],
         background: Stack(
           fit: StackFit.expand,
-          children: const [
-            BackgroundSliver(),
+          children: [
+            const BackgroundSliver(),
             Positioned(
               right: 10,
-              top: 20,
-              child: Icon(Icons.favorite, size: 30, color: Colors.white),
+              top: (sizeHeight + 20) - bloc.valueScroll.value,
+              child: const Icon(Icons.favorite, size: 30, color: Colors.white),
             ),
             Positioned(
               left: 10,
-              top: 20,
-              child: Icon(Icons.arrow_back, size: 30, color: Colors.white),
+              top: (sizeHeight + 20) - bloc.valueScroll.value,
+              child:
+                  const Icon(Icons.arrow_back, size: 30, color: Colors.white),
             ),
           ],
         ),
@@ -114,6 +127,11 @@ class _HeaderSliver extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     final percent = shrinkOffset / _maxHeaderExtent;
+    if (percent > 0.1) {
+      bloc.visibleHeader.value = true;
+    } else {
+      bloc.visibleHeader.value = false;
+    }
     return Stack(
       children: [
         Positioned(
@@ -164,7 +182,19 @@ class _HeaderSliver extends SliverPersistentHeaderDelegate {
               ],
             ),
           ),
-        )
+        ),
+        if (percent > 0.1)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: percent > 0.1
+                  ? Container(height: .5, color: Colors.white10)
+                  : null,
+            ),
+          )
       ],
     );
   }
