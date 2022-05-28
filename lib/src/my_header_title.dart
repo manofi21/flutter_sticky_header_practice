@@ -17,7 +17,7 @@ class MyHeaderTitle extends SliverPersistentHeaderDelegate {
       onHeaderChange(false);
     }
 
-    throw Padding(
+    return Padding(
         padding: const EdgeInsets.only(left: 16),
         child: Align(
           alignment: Alignment.centerLeft,
